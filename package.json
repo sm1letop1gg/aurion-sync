@@ -1,0 +1,19 @@
+{
+  "name": "aurion-sync",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Discord-бот для переноса ролей и серверных ников Aurion между серверами",
+  "type": "module",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "build": "node scripts/check-syntax.js",
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "register": "node src/register-commands.js",
+    "test": "node --test tests/*.test.mjs",
+    "check": "npm run test"
+  },
+  "dependencies": {}
+}
