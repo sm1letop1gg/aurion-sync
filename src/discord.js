@@ -108,7 +108,7 @@ export class DiscordGateway extends EventEmitter {
           presence: {
             status: "online",
             afk: false,
-            activities: [{ name: "неофициальный проект игрока Смайл", type: 0 }],
+            activities: [{ name: "не официальный проект сервера • комьюнити-разработка • главный разработчик Sm1Le", type: 0 }],
           },
         } });
       return;

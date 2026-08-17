@@ -12,7 +12,7 @@ attachCommandHandlers(gateway, rest, config.discordClientId, engine, config.sour
 
 gateway.on("ready", (user) => {
   console.log(`Aurion Sync подключён как ${user.username}#${user.discriminator}`);
-  console.log("Aurion Sync — неофициальный проект комьюнити, созданный игроком Смайл.");
+  console.log("Aurion Sync — не официальный проект сервера, а разработка от комьюнити. Главный разработчик — Sm1Le.");
   console.log(`Основной сервер: ${config.sourceGuildId}. Ожидаю команду /sync на целевом сервере.`);
 });
 gateway.on("resumed", () => console.log("Соединение с Discord восстановлено."));
