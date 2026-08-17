@@ -4,7 +4,7 @@ const EPHEMERAL = 64;
 const ADMINISTRATOR = 1n << 3n;
 const CONFIRM_TTL_MS = 2 * 60_000;
 const RESPONSE_LIMIT = 1_950;
-export const COMMUNITY_DISCLAIMER = "ℹ️ **Aurion Sync — неофициальный проект комьюнити, созданный игроком Смайл.**";
+export const COMMUNITY_DISCLAIMER = "ℹ️ **Aurion Sync — не официальный проект сервера, а разработка от комьюнити. Главный разработчик — Sm1Le.**";
 
 function withDisclaimer(content) {
   const suffix = `\n\n${COMMUNITY_DISCLAIMER}`;
@@ -13,7 +13,7 @@ function withDisclaimer(content) {
 
 export const commandData = [{
   name: "sync",
-  description: "Неофициальный проект игрока Смайл: синхронизация ролей и ников Aurion",
+  description: "Разработка от комьюнити, не официальный проект сервера. Главный разработчик — Sm1Le",
   type: 1,
   default_member_permissions: ADMINISTRATOR.toString(),
   dm_permission: false,
