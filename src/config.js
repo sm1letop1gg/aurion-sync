@@ -31,10 +31,24 @@ export function loadConfig() {
   loadDotEnv();
   const sourceGuildId = optional("SOURCE_GUILD_ID") ?? "1509633054451175575";
   if (!/^\d{15,22}$/.test(sourceGuildId)) throw new Error("SOURCE_GUILD_ID должен быть Discord ID сервера");
+  const apiPort = Number(optional("API_PORT") ?? "3000");
+  if (!Number.isInteger(apiPort) || apiPort < 1 || apiPort > 65_535) throw new Error("API_PORT должен быть целым числом от 1 до 65535");
+  const websiteOrigin = optional("WEBSITE_ORIGIN");
+  if (websiteOrigin) {
+    const origin = new URL(websiteOrigin);
+    if (!["http:", "https:"].includes(origin.protocol) || origin.origin !== websiteOrigin.replace(/\/$/, "")) {
+      throw new Error("WEBSITE_ORIGIN должен быть origin сайта, например https://example.com");
+    }
+  }
   return {
     discordToken: required("DISCORD_TOKEN"),
     discordClientId: required("DISCORD_CLIENT_ID"),
     sourceGuildId,
-    stateFile: path.resolve(optional("STATE_FILE") ?? "./data/sync-state.json"),
+    databaseFile: path.resolve(optional("DATABASE_FILE") ?? "./data/aurion-sync.sqlite"),
+    legacyStateFile: path.resolve(optional("STATE_FILE") ?? "./data/sync-state.json"),
+    apiHost: optional("API_HOST") ?? "127.0.0.1",
+    apiPort,
+    websiteApiToken: optional("WEBSITE_API_TOKEN"),
+    websiteOrigin: websiteOrigin?.replace(/\/$/, ""),
   };
 }

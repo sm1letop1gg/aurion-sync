@@ -7,6 +7,8 @@ test("only /sync is registered and it is administrator-only", () => {
   assert.equal(commandData[0].name, "sync");
   assert.equal(commandData[0].default_member_permissions, String(1n << 3n));
   assert.equal(commandData[0].dm_permission, false);
+  assert.equal(commandData[0].options[0].name, "режим");
+  assert.deepEqual(commandData[0].options[0].choices.map((choice) => choice.value), ["full", "nicknames"]);
   assert.match(commandData[0].description, /не официальный проект сервера/i);
   assert.match(commandData[0].description, /Sm1Le/);
 });
@@ -17,12 +19,14 @@ test("final report contains requested counters and failures", () => {
     rolesCreated: 2,
     rolesUpdated: 1,
     rolesAssigned: 7,
+    rolesRemoved: 2,
     nicknamesChanged: 3,
     skippedBots: 1,
     failures: [{ action: "ник", subject: "123", error: "иерархия ролей" }],
   });
   assert.match(report, /Ролей создано: \*\*2\*\*/);
   assert.match(report, /Ролей выдано: \*\*7\*\*/);
+  assert.match(report, /Ролей снято: \*\*2\*\*/);
   assert.match(report, /Ников изменено: \*\*3\*\*/);
   assert.match(report, /иерархия ролей/);
   assert.match(report, /не официальный проект сервера/);
