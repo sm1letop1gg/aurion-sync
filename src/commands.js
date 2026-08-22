@@ -4,7 +4,7 @@ const EPHEMERAL = 64;
 const ADMINISTRATOR = 1n << 3n;
 const CONFIRM_TTL_MS = 2 * 60_000;
 const RESPONSE_LIMIT = 1_950;
-export const COMMUNITY_DISCLAIMER = "ℹ️ **Aurion Sync — неофициальный проект комьюнити, созданный игроком Смайл.**";
+export const COMMUNITY_DISCLAIMER = "ℹ️ **Aurion Sync — не официальный проект сервера, а разработка от комьюнити. Главный разработчик — Sm1Le.**";
 
 function withDisclaimer(content) {
   const suffix = `\n\n${COMMUNITY_DISCLAIMER}`;
@@ -13,10 +13,20 @@ function withDisclaimer(content) {
 
 export const commandData = [{
   name: "sync",
-  description: "Неофициальный проект игрока Смайл: синхронизация ролей и ников Aurion",
+  description: "Разработка от комьюнити, не официальный проект сервера. Главный разработчик — Sm1Le",
   type: 1,
   default_member_permissions: ADMINISTRATOR.toString(),
   dm_permission: false,
+  options: [{
+    type: 3,
+    name: "режим",
+    description: "Что перенести с основного сервера",
+    required: true,
+    choices: [
+      { name: "Полная синхронизация", value: "full" },
+      { name: "Только никнеймы", value: "nicknames" },
+    ],
+  }],
 }];
 
 function hasAdministrator(interaction) {
@@ -28,10 +38,16 @@ function previewMessage(preview) {
     "## Aurion Sync — подтверждение",
     `**Источник:** ${preview.sourceGuildName}`,
     `**Целевой сервер:** ${preview.targetGuildName}`,
-    `Ролей для синхронизации: **${preview.sourceRoles}**`,
-    `Новых ролей будет создано: **${preview.rolesToCreate}**`,
+    `**Режим:** ${preview.mode === "nicknames" ? "только никнеймы" : "полная синхронизация"}`,
     `Общих участников найдено: **${preview.sharedMembers}**`,
+    `Участников с игнорируемой ролью пропущено: **${preview.ignoredMembers}**`,
   ];
+  if (preview.mode === "full") {
+    lines.splice(4, 0,
+      `Ролей для синхронизации: **${preview.sourceRoles}**`,
+      `Новых ролей будет создано: **${preview.rolesToCreate}**`,
+    );
+  }
   if (preview.warnings.length) lines.push("", ...preview.warnings.map((warning) => `⚠️ ${warning}`));
   lines.push("", "Продолжить массовую синхронизацию?");
   return withDisclaimer(lines.join("\n"));
@@ -44,8 +60,10 @@ export function formatSummary(summary) {
     `Ролей создано: **${summary.rolesCreated}**`,
     `Ролей обновлено: **${summary.rolesUpdated}**`,
     `Ролей выдано: **${summary.rolesAssigned}**`,
+    `Ролей снято: **${summary.rolesRemoved ?? 0}**`,
     `Ников изменено: **${summary.nicknamesChanged}**`,
   ];
+  if (summary.ignoredMembers) lines.push(`Участников полностью проигнорировано: **${summary.ignoredMembers}**`);
   if (summary.skippedBots) lines.push(`Ботов пропущено: **${summary.skippedBots}**`);
   if (summary.failures.length) {
     lines.push("", `Не удалось выполнить действий: **${summary.failures.length}**`);
@@ -88,10 +106,11 @@ export function attachCommandHandlers(gateway, rest, clientId, engine, sourceGui
         await rest.interactionCallback(interaction, { type: 4, data: { content: withDisclaimer("Основной сервер Aurion является источником и не синхронизируется сам с собой."), flags: EPHEMERAL } });
         return;
       }
+      const mode = interaction.data.options?.find((option) => option.name === "режим")?.value ?? "full";
       await rest.interactionCallback(interaction, { type: 5, data: { flags: EPHEMERAL } });
-      const preview = await engine.preview(interaction.guild_id);
+      const preview = await engine.preview(interaction.guild_id, mode);
       const nonce = randomBytes(12).toString("hex");
-      pending.set(nonce, { guildId: interaction.guild_id, userId: interaction.member.user.id, expiresAt: Date.now() + CONFIRM_TTL_MS });
+      pending.set(nonce, { guildId: interaction.guild_id, userId: interaction.member.user.id, mode, expiresAt: Date.now() + CONFIRM_TTL_MS });
       await rest.editInteraction(clientId, interaction.token, { content: previewMessage(preview), components: buttons(nonce) });
       return;
     }
@@ -120,7 +139,7 @@ export function attachCommandHandlers(gateway, rest, clientId, engine, sourceGui
     if (action !== "confirm") return;
     await rest.interactionCallback(interaction, { type: 6 });
     await rest.editInteraction(clientId, interaction.token, { content: withDisclaimer("⏳ Синхронизация запущена…"), components: [] });
-    const summary = await engine.synchronize(request.guildId);
+    const summary = await engine.synchronize(request.guildId, { mode: request.mode });
     await rest.editInteraction(clientId, interaction.token, { content: formatSummary(summary), components: [] });
   }
 }

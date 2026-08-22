@@ -53,6 +53,7 @@ export class DiscordRest {
   createGuildRole(guildId, role) { return this.request("POST", `/guilds/${guildId}/roles`, role, true, "Aurion Sync: создание роли"); }
   modifyGuildRole(guildId, roleId, role) { return this.request("PATCH", `/guilds/${guildId}/roles/${roleId}`, role, true, "Aurion Sync: обновление роли"); }
   addGuildMemberRole(guildId, userId, roleId) { return this.request("PUT", `/guilds/${guildId}/members/${userId}/roles/${roleId}`, undefined, true, "Aurion Sync: выдача роли"); }
+  removeGuildMemberRole(guildId, userId, roleId) { return this.request("DELETE", `/guilds/${guildId}/members/${userId}/roles/${roleId}`, undefined, true, "Aurion Sync: снятие роли"); }
   modifyGuildMember(guildId, userId, body) { return this.request("PATCH", `/guilds/${guildId}/members/${userId}`, body, true, "Aurion Sync: перенос серверного ника"); }
   registerGuildCommands(clientId, guildId, commands) { return this.request("PUT", `/applications/${clientId}/guilds/${guildId}/commands`, commands); }
   registerGlobalCommands(clientId, commands) { return this.request("PUT", `/applications/${clientId}/commands`, commands); }
@@ -108,7 +109,7 @@ export class DiscordGateway extends EventEmitter {
           presence: {
             status: "online",
             afk: false,
-            activities: [{ name: "неофициальный проект игрока Смайл", type: 0 }],
+            activities: [{ name: "не официальный проект сервера • комьюнити-разработка • главный разработчик Sm1Le", type: 0 }],
           },
         } });
       return;
@@ -137,6 +138,8 @@ export class DiscordGateway extends EventEmitter {
       this.emit("resumed");
     } else if (payload.t === "INTERACTION_CREATE") {
       this.emit("interaction", payload.d);
+    } else if (payload.t === "GUILD_MEMBER_ADD") {
+      this.emit("member_join", payload.d);
     }
   }
 
